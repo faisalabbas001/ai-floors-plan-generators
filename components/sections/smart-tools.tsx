@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
 import { Sparkles, PenTool, Home } from 'lucide-react'
+import Image from 'next/image'
 
 export function SmartTools() {
   return (
@@ -56,10 +57,14 @@ export function SmartTools() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center justify-center rounded-xl bg-muted p-4">
-                  <div className="text-center text-sm text-muted-foreground">
-                    Floor Plan Preview
-                  </div>
+                <div className="relative aspect-video overflow-hidden rounded-xl bg-muted">
+                  <Image
+                    src="/images/style2d.png"
+                    alt="Floor Plan Generator Preview"
+                    fill
+                    className="object-cover"
+                    priority
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -87,10 +92,13 @@ export function SmartTools() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center justify-center rounded-xl bg-muted p-4">
-                  <div className="text-center text-sm text-muted-foreground">
-                    Editor Preview
-                  </div>
+                <div className="relative aspect-video overflow-hidden rounded-xl bg-muted">
+                  <Image
+                    src="/images/styletechnical.png"
+                    alt="Floor Plan Editor Preview"
+                    fill
+                    className="object-cover"
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -118,10 +126,13 @@ export function SmartTools() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center justify-center rounded-xl bg-muted p-4">
-                  <div className="text-center text-sm text-muted-foreground">
-                    3D Visualization
-                  </div>
+                <div className="relative aspect-video overflow-hidden rounded-xl bg-muted">
+                  <Image
+                    src="/images/style3d.png"
+                    alt="3D Home Design Preview"
+                    fill
+                    className="object-cover"
+                  />
                 </div>
               </CardContent>
             </Card>

@@ -1,10 +1,29 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Navigation } from '@/components/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { LayoutGrid, Plus, FolderOpen, Clock, Star } from 'lucide-react'
+import { LayoutGrid, Plus, FolderOpen, Clock, Loader2 } from 'lucide-react'
+import { useAuthStore } from '@/lib/stores'
 
 export default function DashboardPage() {
+  const router = useRouter()
+  const { user, isAuthenticated, isLoading } = useAuthStore()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (mounted && !isLoading && !isAuthenticated) {
+      router.push('/login')
+    }
+  }, [mounted, isAuthenticated, isLoading, router])
+
   const recentProjects = [
     {
       id: 1,
@@ -29,15 +48,34 @@ export default function DashboardPage() {
     },
   ]
 
+  if (!mounted || isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return null
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      
+
       <main className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back! Continue your design work or start a new project.</p>
+          <h1 className="text-3xl font-bold mb-2">
+            Welcome back{user?.name ? `, ${user.name.split(' ')[0]}` : ''}!
+          </h1>
+          <p className="text-muted-foreground">Continue your design work or start a new project.</p>
         </div>
 
         {/* Quick Actions */}

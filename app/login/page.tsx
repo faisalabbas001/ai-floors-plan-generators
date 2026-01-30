@@ -1,15 +1,33 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { LayoutGrid, Eye, EyeOff } from 'lucide-react'
+import { LayoutGrid, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { useAuthStore } from '@/lib/stores'
 
 export default function LoginPage() {
+  const router = useRouter()
+  const { login, isLoading, error, clearError } = useAuthStore()
+
   const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    clearError()
+
+    const success = await login({ email, password })
+
+    if (success) {
+      router.push('/dashboard')
+    }
+  }
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
@@ -60,11 +78,26 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-900">
+              {error}
+            </div>
+          )}
+
           {/* Form */}
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="john@example.com" required />
+              <Input
+                id="email"
+                type="email"
+                placeholder="john@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+              />
             </div>
 
             <div className="space-y-2">
@@ -75,11 +108,14 @@ export default function LoginPage() {
                 </Link>
               </div>
               <div className="relative">
-                <Input 
-                  id="password" 
-                  type={showPassword ? 'text' : 'password'} 
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
-                  required 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
@@ -98,8 +134,15 @@ export default function LoginPage() {
               </label>
             </div>
 
-            <Button type="submit" className="w-full h-12 text-base">
-              Log In
+            <Button type="submit" className="w-full h-12 text-base" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Logging in...
+                </>
+              ) : (
+                'Log In'
+              )}
             </Button>
           </form>
 
@@ -118,7 +161,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.3),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(236,72,153,0.3),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(6,182,212,0.3),transparent_50%)]" />
-        
+
         <div className="absolute inset-0 flex items-center justify-center p-12">
           <div className="text-center space-y-6 max-w-lg">
             <h2 className="text-4xl font-bold text-white text-balance">

@@ -1,0 +1,71 @@
+# ===========================================
+# AI Floor Plan Generator Frontend - .dockerignore
+# ===========================================
+
+# Dependencies (will be installed in container)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+.pnpm-debug.log*
+
+# Build output (will be built in container)
+.next/
+out/
+dist/
+build/
+
+# Environment files (use build args instead)
+.env
+.env.*
+.env.local
+.env*.local
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+BUILD_READY.md
+docs/
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Testing
+coverage/
+.nyc_output/
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Vercel
+.vercel/
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.docker/
+.dockerignore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+*.md
+.turbo/
+.eslintcache

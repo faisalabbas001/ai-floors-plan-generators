@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Layers } from 'lucide-react'
+import Image from 'next/image'
 
 export function Footer() {
   const footerLinks = {
@@ -32,11 +32,14 @@ export function Footer() {
       <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Layers className="h-5 w-5" />
-              </div>
-              <span className="text-lg font-semibold">Floor Plan AI</span>
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/Flowplanlogo.png"
+                alt="FloorPlan AI Logo"
+                width={500}
+                height={500}
+                className="h-20 sm:h-24 w-auto"
+              />
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
               Redefining floor plan with AI technology, giving everyone access to professional-grade design experiences.

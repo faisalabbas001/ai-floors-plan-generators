@@ -1,16 +1,58 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { LayoutGrid, Eye, EyeOff } from 'lucide-react'
+import { LayoutGrid, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { useAuthStore } from '@/lib/stores'
 
 export default function SignupPage() {
+  const router = useRouter()
+  const { signup, isLoading, error, clearError } = useAuthStore()
+
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [validationError, setValidationError] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    clearError()
+    setValidationError('')
+
+    if (password !== confirmPassword) {
+      setValidationError('Passwords do not match')
+      return
+    }
+
+    if (password.length < 8) {
+      setValidationError('Password must be at least 8 characters')
+      return
+    }
+
+    const name = `${firstName} ${lastName}`.trim()
+
+    if (name.length < 3) {
+      setValidationError('Please enter your full name')
+      return
+    }
+
+    const success = await signup({ name, email, password })
+
+    if (success) {
+      router.push('/dashboard')
+    }
+  }
+
+  const displayError = validationError || error
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
@@ -61,32 +103,64 @@ export default function SignupPage() {
             </div>
           </div>
 
+          {/* Error Message */}
+          {displayError && (
+            <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-900">
+              {displayError}
+            </div>
+          )}
+
           {/* Form */}
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" placeholder="John" required />
+                <Input
+                  id="firstName"
+                  placeholder="John"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" placeholder="Doe" required />
+                <Input
+                  id="lastName"
+                  placeholder="Doe"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
               </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="john@example.com" required />
+              <Input
+                id="email"
+                type="email"
+                placeholder="john@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-                <Input 
-                  id="password" 
-                  type={showPassword ? 'text' : 'password'} 
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="Create a password"
-                  required 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
@@ -101,11 +175,14 @@ export default function SignupPage() {
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <div className="relative">
-                <Input 
-                  id="confirmPassword" 
-                  type={showConfirmPassword ? 'text' : 'password'} 
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Confirm your password"
-                  required 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
@@ -118,7 +195,7 @@ export default function SignupPage() {
             </div>
 
             <div className="flex items-start gap-2">
-              <Checkbox id="terms" className="mt-0.5" />
+              <Checkbox id="terms" className="mt-0.5" required />
               <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight">
                 {'I agree to the Floor Plan AI '}
                 <Link href="/terms" className="text-primary hover:underline">User Agreement</Link>
@@ -127,8 +204,15 @@ export default function SignupPage() {
               </label>
             </div>
 
-            <Button type="submit" className="w-full h-12 text-base">
-              Create Account
+            <Button type="submit" className="w-full h-12 text-base" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating Account...
+                </>
+              ) : (
+                'Create Account'
+              )}
             </Button>
 
             <p className="text-xs text-center text-muted-foreground">
@@ -153,7 +237,7 @@ export default function SignupPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.3),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(236,72,153,0.3),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(6,182,212,0.3),transparent_50%)]" />
-        
+
         <div className="absolute inset-0 flex items-center justify-center p-12">
           <div className="text-center space-y-6 max-w-lg">
             <h2 className="text-4xl font-bold text-white text-balance">
