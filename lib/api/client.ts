@@ -1,8 +1,8 @@
-// Production URL (uncomment for production)
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ai-floors-plan-backed-production.up.railway.app';
+// Production URL - Railway Backend
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ai-floors-plan-backed-production.up.railway.app';
 
-// Local Development
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+// Local Development (uncomment for local testing)
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 
 
