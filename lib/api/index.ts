@@ -13,3 +13,11 @@ export type {
   GeneratedPlan,
   PlannerResponse,
 } from './planner';
+
+export { cadApi } from './cad';
+export type {
+  CADGenerateRequest,
+  CADGenerateResponse,
+  CADFile,
+  CADStatsResponse,
+} from './cad';

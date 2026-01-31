@@ -90,6 +90,16 @@ const PreviewTechnical = dynamic(() => import('./preview-technical').then((mod) 
   ),
 })
 
+// Dynamic import for CAD Export Panel
+const CADExportPanel = dynamic(() => import('@/components/cad-export').then((mod) => mod.CADExportPanel), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-24">
+      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+    </div>
+  ),
+})
+
 // Style images with actual preview images
 const STYLE_PREVIEWS = {
   technical: {
@@ -857,6 +867,15 @@ export function FloorPlanGenerator() {
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
+                      )}
+
+                      {/* CAD Export Panel - AutoCAD/DXF/DWG */}
+                      {generatedPlan && (
+                        <CADExportPanel
+                          planData={generatedPlan}
+                          floorIndex={0}
+                          className="mt-4"
+                        />
                       )}
                     </div>
                   ) : (
