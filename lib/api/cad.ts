@@ -62,7 +62,7 @@ export const cadApi = {
    */
   async generate(request: CADGenerateRequest): Promise<CADGenerateResponse> {
     const response = await apiClient.post<{ data: CADGenerateResponse }>(
-      '/cad/generate',
+      '/api/cad/generate',
       request
     );
     return response.data;
@@ -77,7 +77,7 @@ export const cadApi = {
     scale: number = 1
   ): Promise<Blob> {
     const response = await apiClient.post<Blob>(
-      '/cad/dxf',
+      '/api/cad/dxf',
       { planData, floorIndex, scale },
       { responseType: 'blob' }
     );
@@ -88,7 +88,7 @@ export const cadApi = {
    * Get CAD service stats
    */
   async getStats(): Promise<CADStatsResponse> {
-    const response = await apiClient.get<{ data: CADStatsResponse }>('/cad/stats');
+    const response = await apiClient.get<{ data: CADStatsResponse }>('/api/cad/stats');
     return response.data;
   },
 

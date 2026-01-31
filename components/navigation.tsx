@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { ChevronDown, Globe, Menu, User, LogOut, Settings, LayoutDashboard } from 'lucide-react'
+import { ChevronDown, Globe, Menu, User, LogOut, Settings, LayoutDashboard, Monitor } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,6 +74,12 @@ export function Navigation() {
                 <DropdownMenuItem>
                   <Link href="/editor">Floor Plan Editor</Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link href="/live-design" className="flex items-center gap-2">
+                    <Monitor className="h-4 w-4" />
+                    Live CAD Design
+                  </Link>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
@@ -137,6 +143,14 @@ export function Navigation() {
                     onClick={() => setIsOpen(false)}
                   >
                     Floor Plan Editor
+                  </Link>
+                  <Link
+                    href="/live-design"
+                    className="text-base font-medium transition-colors hover:text-primary pl-4 flex items-center gap-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Monitor className="h-4 w-4" />
+                    Live CAD Design
                   </Link>
                 </div>
                 <div className="flex flex-col gap-2 py-2 border-b border-border">

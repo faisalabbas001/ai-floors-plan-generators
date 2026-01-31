@@ -118,9 +118,11 @@ export function Hero() {
                 Start Your Floor Plan <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" className="gap-2 bg-transparent">
-              <Play className="h-4 w-4" />
-              Try Drawing Online
+            <Button size="lg" variant="outline" className="gap-2 bg-transparent" asChild>
+              <Link href="/live-design">
+                <Play className="h-4 w-4" />
+                Try Drawing Online
+              </Link>
             </Button>
           </div>
 
