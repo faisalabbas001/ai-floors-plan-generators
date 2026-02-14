@@ -33,7 +33,8 @@ export interface Room {
   y: number;
   width: number;
   height: number;
-  length: number;
+  length: number; // architectural length in feet
+  widthFt?: number; // architectural width in feet
   areaSqft: number;
   color: string;
   features?: string[];
@@ -215,12 +216,20 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   loadFromGeneratedPlan: (plan) => {
-    const scale = get().scale;
+    // Guard: plan must have floors array
+    if (!plan || !plan.floors || !Array.isArray(plan.floors) || plan.floors.length === 0) {
+      console.warn('loadFromGeneratedPlan: plan has no valid floors data', plan);
+      return;
+    }
+
     const padding = 100; // Match preview-2d padding
 
     // Editor canvas dimensions (approximate)
     const availableWidth = 1000;
     const availableHeight = 700;
+
+    // Track the computed scale (pixels per foot) - will be set during layout
+    let computedScale = get().scale;
 
     const convertedPlan: FloorPlanData = {
       buildingType: plan.buildingType || 'residential',
@@ -253,15 +262,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           const scaleY = availableHeight / buildingDepth;
           const layoutScale = Math.min(scaleX, scaleY) * 0.8;
 
+          // Update store scale to match layout scale so 3D/technical views convert correctly
+          computedScale = layoutScale;
+
           const scaledWidth = buildingWidth * layoutScale;
           const scaledHeight = buildingDepth * layoutScale;
           const offsetX = padding + (availableWidth - scaledWidth) / 2;
           const offsetY = padding + (availableHeight - scaledHeight) / 2 + floorIndex * 600;
 
           layoutedRooms = rooms.map((room: any) => {
-            const length = room.dimensions?.length || Math.sqrt(room.areaSqft || 150);
-            const width = room.dimensions?.width || Math.sqrt(room.areaSqft || 150);
-            const areaSqft = room.areaSqft || length * width;
+            const lengthFt = room.dimensions?.length || Math.sqrt(room.areaSqft || 150);
+            const widthFt = room.dimensions?.width || Math.sqrt(room.areaSqft || 150);
+            const areaSqft = room.areaSqft || lengthFt * widthFt;
 
             return {
               id: room.id || generateId(),
@@ -269,9 +281,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
               type: room.type || room.name.toLowerCase(),
               x: offsetX + (room.position?.x || 0) * layoutScale,
               y: offsetY + (room.position?.y || 0) * layoutScale,
-              width: width * layoutScale,
-              height: length * layoutScale,
-              length: length,
+              width: widthFt * layoutScale,
+              height: lengthFt * layoutScale,
+              length: lengthFt,
+              widthFt: widthFt,
               areaSqft: areaSqft,
               color: getRoomColor(room.type || room.name),
               features: room.features || [],
@@ -282,6 +295,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           // Fallback grid layout - EXACTLY matching preview-2d logic
           const totalArea = rooms.reduce((sum: number, r: any) => sum + (r.areaSqft || 100), 0);
           const scaleFactor = Math.sqrt((availableWidth * availableHeight * 0.55) / totalArea);
+          computedScale = scaleFactor;
           const cols = Math.ceil(Math.sqrt(rooms.length));
 
           // Calculate room sizes
@@ -348,6 +362,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
                 width: room.calculatedWidth,
                 height: rowH, // All rooms in a row have same height
                 length: room.length,
+                widthFt: room.dimensions?.width || Math.sqrt(room.areaSqft || 100),
                 areaSqft: room.areaSqft || 100,
                 color: getRoomColor(room.type || room.name),
                 features: room.features || [],
@@ -374,6 +389,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       floorPlan: convertedPlan,
       selectedFloorId: convertedPlan.floors[0]?.id || null,
       selectedRoomId: null,
+      scale: computedScale, // Sync scale so 3D/technical views convert correctly
     });
     get().saveToHistory();
   },

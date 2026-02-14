@@ -59,11 +59,16 @@ export function FloorPlanEditor() {
 
   const { viewMode, floorPlan, loadFromGeneratedPlan, selectedRoomId, selectedElementId } = useEditorStore()
   const { generatedPlan } = usePlannerStore()
+  const lastLoadedPlanRef = useRef<any>(null)
 
-  // Auto-load generated plan when available
+  // Auto-load generated plan when available or changed (e.g. new template applied)
   useEffect(() => {
-    if (generatedPlan && !floorPlan) {
-      loadFromGeneratedPlan(generatedPlan)
+    if (generatedPlan && generatedPlan.floors && Array.isArray(generatedPlan.floors) && generatedPlan.floors.length > 0) {
+      // Load if no plan exists OR if generatedPlan changed (new template/generation)
+      if (!floorPlan || generatedPlan !== lastLoadedPlanRef.current) {
+        lastLoadedPlanRef.current = generatedPlan
+        loadFromGeneratedPlan(generatedPlan)
+      }
     }
   }, [generatedPlan, floorPlan, loadFromGeneratedPlan])
 

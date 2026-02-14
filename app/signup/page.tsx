@@ -8,7 +8,20 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { LayoutGrid, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { z } from 'zod'
 import { useAuthStore } from '@/lib/stores'
+
+const signupSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirmPassword: z.string().min(1, 'Please confirm your password'),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
+})
 
 export default function SignupPage() {
   const router = useRouter()
@@ -21,30 +34,26 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [validationError, setValidationError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     clearError()
-    setValidationError('')
+    setFieldErrors({})
 
-    if (password !== confirmPassword) {
-      setValidationError('Passwords do not match')
-      return
-    }
-
-    if (password.length < 8) {
-      setValidationError('Password must be at least 8 characters')
+    const result = signupSchema.safeParse({ firstName, lastName, email, password, confirmPassword })
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as string
+        if (!errors[field]) errors[field] = issue.message
+      })
+      setFieldErrors(errors)
+      toast.error('Please fix the form errors')
       return
     }
 
     const name = `${firstName} ${lastName}`.trim()
-
-    if (name.length < 3) {
-      setValidationError('Please enter your full name')
-      return
-    }
-
     const success = await signup({ name, email, password })
 
     if (success) {
@@ -52,7 +61,7 @@ export default function SignupPage() {
     }
   }
 
-  const displayError = validationError || error
+  const displayError = error
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
@@ -111,7 +120,7 @@ export default function SignupPage() {
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
@@ -119,10 +128,11 @@ export default function SignupPage() {
                   id="firstName"
                   placeholder="John"
                   value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
+                  onChange={(e) => { setFirstName(e.target.value); setFieldErrors((prev) => ({ ...prev, firstName: '' })) }}
                   disabled={isLoading}
+                  className={fieldErrors.firstName ? 'border-red-500' : ''}
                 />
+                {fieldErrors.firstName && <p className="text-xs text-red-500">{fieldErrors.firstName}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
@@ -130,10 +140,11 @@ export default function SignupPage() {
                   id="lastName"
                   placeholder="Doe"
                   value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
+                  onChange={(e) => { setLastName(e.target.value); setFieldErrors((prev) => ({ ...prev, lastName: '' })) }}
                   disabled={isLoading}
+                  className={fieldErrors.lastName ? 'border-red-500' : ''}
                 />
+                {fieldErrors.lastName && <p className="text-xs text-red-500">{fieldErrors.lastName}</p>}
               </div>
             </div>
 
@@ -144,10 +155,11 @@ export default function SignupPage() {
                 type="email"
                 placeholder="john@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                onChange={(e) => { setEmail(e.target.value); setFieldErrors((prev) => ({ ...prev, email: '' })) }}
                 disabled={isLoading}
+                className={fieldErrors.email ? 'border-red-500' : ''}
               />
+              {fieldErrors.email && <p className="text-xs text-red-500">{fieldErrors.email}</p>}
             </div>
 
             <div className="space-y-2">
@@ -156,11 +168,11 @@ export default function SignupPage() {
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Create a password"
+                  placeholder="Create a password (min 8 characters)"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                  onChange={(e) => { setPassword(e.target.value); setFieldErrors((prev) => ({ ...prev, password: '' })) }}
                   disabled={isLoading}
+                  className={fieldErrors.password ? 'border-red-500' : ''}
                 />
                 <button
                   type="button"
@@ -170,6 +182,7 @@ export default function SignupPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {fieldErrors.password && <p className="text-xs text-red-500">{fieldErrors.password}</p>}
             </div>
 
             <div className="space-y-2">
@@ -180,9 +193,9 @@ export default function SignupPage() {
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Confirm your password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
+                  onChange={(e) => { setConfirmPassword(e.target.value); setFieldErrors((prev) => ({ ...prev, confirmPassword: '' })) }}
                   disabled={isLoading}
+                  className={fieldErrors.confirmPassword ? 'border-red-500' : ''}
                 />
                 <button
                   type="button"
@@ -192,6 +205,7 @@ export default function SignupPage() {
                   {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {fieldErrors.confirmPassword && <p className="text-xs text-red-500">{fieldErrors.confirmPassword}</p>}
             </div>
 
             <div className="flex items-start gap-2">

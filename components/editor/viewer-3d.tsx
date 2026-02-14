@@ -714,6 +714,47 @@ function Room3D({
   )
 }
 
+// Adaptive camera that adjusts position based on building size
+function AdaptiveCamera({ rooms, scale: storeScale }: { rooms: Room[]; scale: number }) {
+  const camDist = useMemo(() => {
+    if (rooms.length === 0) return { x: 12, y: 16, z: 12 }
+    let minX = Infinity, maxX = -Infinity
+    let minY = Infinity, maxY = -Infinity
+    rooms.forEach(room => {
+      minX = Math.min(minX, room.x)
+      maxX = Math.max(maxX, room.x + room.width)
+      minY = Math.min(minY, room.y)
+      maxY = Math.max(maxY, room.y + room.height)
+    })
+    const bldgW = (maxX - minX) / storeScale
+    const bldgD = (maxY - minY) / storeScale
+    const maxDim = Math.max(bldgW, bldgD, 20)
+    const dist = maxDim * 0.7
+    return { x: dist, y: dist * 0.9, z: dist }
+  }, [rooms, storeScale])
+
+  return <PerspectiveCamera makeDefault position={[camDist.x, camDist.y, camDist.z]} fov={45} />
+}
+
+// Adaptive fog based on building size
+function AdaptiveFog({ rooms, scale: storeScale }: { rooms: Room[]; scale: number }) {
+  const fogRange = useMemo(() => {
+    if (rooms.length === 0) return { near: 30, far: 60 }
+    let minX = Infinity, maxX = -Infinity
+    let minY = Infinity, maxY = -Infinity
+    rooms.forEach(room => {
+      minX = Math.min(minX, room.x)
+      maxX = Math.max(maxX, room.x + room.width)
+      minY = Math.min(minY, room.y)
+      maxY = Math.max(maxY, room.y + room.height)
+    })
+    const maxDim = Math.max((maxX - minX) / storeScale, (maxY - minY) / storeScale, 20)
+    return { near: maxDim * 1.5, far: maxDim * 4 }
+  }, [rooms, storeScale])
+
+  return <fog attach="fog" args={['#E8F0F8', fogRange.near, fogRange.far]} />
+}
+
 // Scene component
 function Scene() {
   const {
@@ -771,26 +812,26 @@ function Scene() {
 
   return (
     <>
-      {/* Lighting - natural daylight */}
+      {/* Lighting - natural daylight, adaptive to building size */}
       <ambientLight intensity={0.5} />
       <directionalLight
-        position={[15, 25, 15]}
+        position={[buildingBounds.width * 0.6, Math.max(25, buildingBounds.width * 0.5), buildingBounds.depth * 0.6]}
         intensity={1.2}
         castShadow
         shadow-mapSize={[4096, 4096]}
-        shadow-camera-far={60}
-        shadow-camera-left={-20}
-        shadow-camera-right={20}
-        shadow-camera-top={20}
-        shadow-camera-bottom={-20}
+        shadow-camera-far={Math.max(60, buildingBounds.width * 2)}
+        shadow-camera-left={-Math.max(20, buildingBounds.width * 0.8)}
+        shadow-camera-right={Math.max(20, buildingBounds.width * 0.8)}
+        shadow-camera-top={Math.max(20, buildingBounds.depth * 0.8)}
+        shadow-camera-bottom={-Math.max(20, buildingBounds.depth * 0.8)}
         shadow-bias={-0.0001}
       />
-      <directionalLight position={[-10, 20, -10]} intensity={0.4} />
+      <directionalLight position={[-buildingBounds.width * 0.4, 20, -buildingBounds.depth * 0.4]} intensity={0.4} />
       <hemisphereLight args={['#B4D7E8', '#8B7355', 0.4]} />
 
-      {/* Ground plane with grass texture feel */}
+      {/* Ground plane with grass texture feel - adaptive size */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[50, 50]} />
+        <planeGeometry args={[Math.max(50, buildingBounds.width * 3), Math.max(50, buildingBounds.depth * 3)]} />
         <meshStandardMaterial color="#90A868" roughness={0.95} />
       </mesh>
 
@@ -887,17 +928,17 @@ export function Viewer3D({ className }: Viewer3DProps) {
         }}
       >
         <Suspense fallback={null}>
-          <PerspectiveCamera makeDefault position={[12, 16, 12]} fov={45} />
+          <AdaptiveCamera rooms={rooms} scale={useEditorStore.getState().scale} />
           <OrbitControls
             ref={controlsRef}
             enableDamping
             dampingFactor={0.08}
-            minDistance={6}
-            maxDistance={40}
+            minDistance={3}
+            maxDistance={200}
             maxPolarAngle={Math.PI / 2.1}
             target={[0, 1, 0]}
           />
-          <fog attach="fog" args={['#E8F0F8', 30, 60]} />
+          <AdaptiveFog rooms={rooms} scale={useEditorStore.getState().scale} />
           <Scene />
         </Suspense>
       </Canvas>

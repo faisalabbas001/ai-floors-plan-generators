@@ -1600,25 +1600,39 @@ export const Canvas2D = forwardRef<Canvas2DHandle, Canvas2DProps>(function Canva
                   />
                 )}
 
-                {/* Room Label */}
+                {/* Room Label with background for better visibility */}
                 {showLabels && (
                   <>
+                    {/* Label background box */}
+                    <Rect
+                      x={room.width * 0.15}
+                      y={room.height / 2 - 20}
+                      width={room.width * 0.7}
+                      height={32}
+                      fill="rgba(255, 255, 255, 0.85)"
+                      stroke="rgba(0, 0, 0, 0.1)"
+                      strokeWidth={0.5}
+                      cornerRadius={3}
+                      shadowColor="rgba(0, 0, 0, 0.1)"
+                      shadowBlur={2}
+                      shadowOffsetY={1}
+                    />
                     <Text
                       text={room.name}
                       x={0}
-                      y={room.height / 2 - 14}
+                      y={room.height / 2 - 15}
                       width={room.width}
                       fontSize={11}
                       fontStyle="bold"
-                      fill="#333"
+                      fill="#222"
                       align="center"
                     />
                     <Text
                       text={`${room.areaSqft} sq ft`}
                       x={0}
-                      y={room.height / 2}
+                      y={room.height / 2 + 1}
                       width={room.width}
-                      fontSize={10}
+                      fontSize={9}
                       fill="#666"
                       align="center"
                     />

@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { ChevronDown, Globe, Menu, User, LogOut, Settings, LayoutDashboard, Monitor } from 'lucide-react'
+import { ChevronDown, Globe, Menu, User, LogOut, Settings, LayoutDashboard, Monitor, FolderOpen, Layers, BookOpen, Shield, FileImage, FileBox } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,22 +82,44 @@ export function Navigation() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Link href="/projects" className="text-sm font-medium transition-colors hover:text-primary">
+              Projects
+            </Link>
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary">
-                Home Design <ChevronDown className="h-3.5 w-3.5" />
+                Professional <ChevronDown className="h-3.5 w-3.5" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem>Interior Design AI</DropdownMenuItem>
-                <DropdownMenuItem>Exterior Design AI</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary">
-                AI Tools <ChevronDown className="h-3.5 w-3.5" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem>Virtual Staging AI</DropdownMenuItem>
-                <DropdownMenuItem>Sketch to Image AI</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/templates" className="flex items-center gap-2">
+                    <Layers className="h-4 w-4" />
+                    Templates Library
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/drawings" className="flex items-center gap-2">
+                    <FileImage className="h-4 w-4" />
+                    Drawings Viewer
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/building-codes" className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    Building Codes
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/brand-manual" className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    Brand Manuals
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/revit" className="flex items-center gap-2">
+                    <FileBox className="h-4 w-4" />
+                    Revit Integration
+                  </Link>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </nav>
@@ -153,23 +175,55 @@ export function Navigation() {
                     Live CAD Design
                   </Link>
                 </div>
-                <div className="flex flex-col gap-2 py-2 border-b border-border">
-                  <span className="text-sm font-semibold text-muted-foreground">Home Design</span>
-                  <button className="text-base font-medium transition-colors hover:text-primary pl-4 text-left">
-                    Interior Design AI
-                  </button>
-                  <button className="text-base font-medium transition-colors hover:text-primary pl-4 text-left">
-                    Exterior Design AI
-                  </button>
-                </div>
-                <div className="flex flex-col gap-2 py-2 border-b border-border">
-                  <span className="text-sm font-semibold text-muted-foreground">AI Tools</span>
-                  <button className="text-base font-medium transition-colors hover:text-primary pl-4 text-left">
-                    Virtual Staging AI
-                  </button>
-                  <button className="text-base font-medium transition-colors hover:text-primary pl-4 text-left">
-                    Sketch to Image AI
-                  </button>
+                <Link
+                  href="/projects"
+                  className="text-base font-medium transition-colors hover:text-primary py-2"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Projects
+                </Link>
+                <div className="flex flex-col gap-2 py-2 border-t border-b border-border">
+                  <span className="text-sm font-semibold text-muted-foreground">Professional</span>
+                  <Link
+                    href="/templates"
+                    className="text-base font-medium transition-colors hover:text-primary pl-4 flex items-center gap-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Layers className="h-4 w-4" />
+                    Templates Library
+                  </Link>
+                  <Link
+                    href="/drawings"
+                    className="text-base font-medium transition-colors hover:text-primary pl-4 flex items-center gap-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <FileImage className="h-4 w-4" />
+                    Drawings Viewer
+                  </Link>
+                  <Link
+                    href="/building-codes"
+                    className="text-base font-medium transition-colors hover:text-primary pl-4 flex items-center gap-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Shield className="h-4 w-4" />
+                    Building Codes
+                  </Link>
+                  <Link
+                    href="/brand-manual"
+                    className="text-base font-medium transition-colors hover:text-primary pl-4 flex items-center gap-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    Brand Manuals
+                  </Link>
+                  <Link
+                    href="/revit"
+                    className="text-base font-medium transition-colors hover:text-primary pl-4 flex items-center gap-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <FileBox className="h-4 w-4" />
+                    Revit Integration
+                  </Link>
                 </div>
 
                 {mounted && isAuthenticated && user ? (
@@ -245,7 +299,7 @@ export function Navigation() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/profile" className="cursor-pointer">
+                  <Link href="/settings" className="cursor-pointer">
                     <User className="w-4 h-4 mr-2" />
                     Profile
                   </Link>

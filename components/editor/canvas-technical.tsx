@@ -858,7 +858,7 @@ export const CanvasTechnical = forwardRef<CanvasTechnicalHandle, CanvasTechnical
             const isExteriorEast = buildingBounds && Math.abs(room.x + room.width - buildingBounds.maxX) < 6
             const roomType = room.name.toLowerCase()
 
-            const roomWidthFt = room.length || Math.round(room.width / scale)
+            const roomWidthFt = room.widthFt || Math.round(room.width / scale)
             const roomHeightFt = room.length || Math.round(room.height / scale)
 
             const isWetArea = roomType.includes('bathroom') || roomType.includes('kitchen') ||
@@ -1007,13 +1007,23 @@ export const CanvasTechnical = forwardRef<CanvasTechnicalHandle, CanvasTechnical
                   }}
                 />
 
-                {/* Room Label */}
+                {/* Room Label - positioned at top of room with background for better visibility */}
+                <Rect
+                  x={room.x + room.width * 0.15}
+                  y={room.y + 8}
+                  width={room.width * 0.7}
+                  height={28}
+                  fill="rgba(255, 255, 255, 0.9)"
+                  stroke="#E0E0E0"
+                  strokeWidth={0.5}
+                  cornerRadius={2}
+                />
                 <Text
                   x={room.x}
-                  y={room.y + room.height / 2 - 18}
+                  y={room.y + 11}
                   width={room.width}
                   text={room.name.toUpperCase()}
-                  fontSize={11}
+                  fontSize={10}
                   fontStyle="bold"
                   fontFamily="Arial"
                   fill={TEXT_COLOR}
@@ -1021,31 +1031,59 @@ export const CanvasTechnical = forwardRef<CanvasTechnicalHandle, CanvasTechnical
                 />
                 <Text
                   x={room.x}
-                  y={room.y + room.height / 2 - 3}
+                  y={room.y + 23}
                   width={room.width}
-                  text={`${formatFeetInches(roomWidthFt)}x${formatFeetInches(roomHeightFt)}`}
-                  fontSize={9}
+                  text={`${formatFeetInches(roomWidthFt)} × ${formatFeetInches(roomHeightFt)}`}
+                  fontSize={8}
                   fontFamily="Arial"
-                  fill="#333"
+                  fill="#666"
                   align="center"
                 />
 
-                {/* Room dimension lines */}
-                <Line
-                  points={[room.x + 8, room.y + room.height + 15, room.x + room.width - 8, room.y + room.height + 15]}
-                  stroke={DIM_LINE_COLOR}
-                  strokeWidth={0.5}
-                />
-                <Line points={[room.x + 8, room.y + room.height + 10, room.x + 8, room.y + room.height + 20]} stroke={DIM_LINE_COLOR} strokeWidth={0.5} />
-                <Line points={[room.x + room.width - 8, room.y + room.height + 10, room.x + room.width - 8, room.y + room.height + 20]} stroke={DIM_LINE_COLOR} strokeWidth={0.5} />
+                {/* Room dimension lines - only show if not shared with another room */}
+                {!isExteriorSouth && !sharedWalls.has('south') && (
+                  <>
+                    <Line
+                      points={[room.x + 12, room.y + room.height + 18, room.x + room.width - 12, room.y + room.height + 18]}
+                      stroke={DIM_LINE_COLOR}
+                      strokeWidth={0.6}
+                      dash={[2, 2]}
+                    />
+                    <Line points={[room.x + 12, room.y + room.height + 13, room.x + 12, room.y + room.height + 23]} stroke={DIM_LINE_COLOR} strokeWidth={0.6} />
+                    <Line points={[room.x + room.width - 12, room.y + room.height + 13, room.x + room.width - 12, room.y + room.height + 23]} stroke={DIM_LINE_COLOR} strokeWidth={0.6} />
+                    <Text
+                      x={room.x}
+                      y={room.y + room.height + 26}
+                      width={room.width}
+                      text={formatFeetInches(roomWidthFt)}
+                      fontSize={7}
+                      fontFamily="Arial"
+                      fill="#666"
+                      align="center"
+                    />
+                  </>
+                )}
 
-                <Line
-                  points={[room.x + room.width + 15, room.y + 8, room.x + room.width + 15, room.y + room.height - 8]}
-                  stroke={DIM_LINE_COLOR}
-                  strokeWidth={0.5}
-                />
-                <Line points={[room.x + room.width + 10, room.y + 8, room.x + room.width + 20, room.y + 8]} stroke={DIM_LINE_COLOR} strokeWidth={0.5} />
-                <Line points={[room.x + room.width + 10, room.y + room.height - 8, room.x + room.width + 20, room.y + room.height - 8]} stroke={DIM_LINE_COLOR} strokeWidth={0.5} />
+                {!isExteriorEast && !sharedWalls.has('east') && (
+                  <>
+                    <Line
+                      points={[room.x + room.width + 18, room.y + 12, room.x + room.width + 18, room.y + room.height - 12]}
+                      stroke={DIM_LINE_COLOR}
+                      strokeWidth={0.6}
+                      dash={[2, 2]}
+                    />
+                    <Line points={[room.x + room.width + 13, room.y + 12, room.x + room.width + 23, room.y + 12]} stroke={DIM_LINE_COLOR} strokeWidth={0.6} />
+                    <Line points={[room.x + room.width + 13, room.y + room.height - 12, room.x + room.width + 23, room.y + room.height - 12]} stroke={DIM_LINE_COLOR} strokeWidth={0.6} />
+                    <Text
+                      x={room.x + room.width + 26}
+                      y={room.y + room.height / 2 - 4}
+                      text={formatFeetInches(roomHeightFt)}
+                      fontSize={7}
+                      fontFamily="Arial"
+                      fill="#666"
+                    />
+                  </>
+                )}
               </Group>
             )
           })}

@@ -48,9 +48,14 @@ import {
   FileText,
   FileCode,
   FileJson,
+  FolderPlus,
+  Shield,
+  BookOpen,
+  ImageIcon,
 } from 'lucide-react'
 import jsPDF from 'jspdf'
-import { usePlannerStore, useAuthStore, useEditorStore } from '@/lib/stores'
+import { toast } from 'sonner'
+import { usePlannerStore, useAuthStore, useEditorStore, useProjectsStore } from '@/lib/stores'
 import type { GeneratedPlan } from '@/lib/api'
 import { exportToJSON, exportToDXF, exportPlanToSVG } from '@/lib/utils/export'
 import type { PlanHistoryItem } from '@/lib/stores/planner-store'
@@ -157,12 +162,15 @@ export function FloorPlanGenerator() {
     clearHistory,
   } = usePlannerStore()
 
+  const { createProject } = useProjectsStore()
+
   const [selectedModel, setSelectedModel] = useState('basic')
   const [activeTab, setActiveTab] = useState('generator')
   const [previewTab, setPreviewTab] = useState<'preview' | 'details'>('preview')
   const [showMoreRatios, setShowMoreRatios] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const previewRef = useRef<HTMLDivElement>(null)
 
   // Refs for preview components to capture their canvas
@@ -226,6 +234,48 @@ export function FloorPlanGenerator() {
     setPreviewTab('preview')
   }
 
+  const handleSaveAsProject = async () => {
+    if (!generatedPlan) return
+    if (!isAuthenticated) {
+      toast.error('Please log in to save projects')
+      router.push('/login')
+      return
+    }
+    setIsSaving(true)
+    try {
+      const projectId = await createProject({
+        name: `${generatedPlan.buildingType || 'Floor'} Plan - ${new Date().toLocaleDateString()}`,
+        description: prompt || `Generated ${generatedPlan.buildingType} floor plan`,
+        buildingType: generatedPlan.buildingType?.toLowerCase() || 'residential',
+        plan: generatedPlan,
+      })
+      if (projectId) {
+        toast.success('Project saved with floor plan data!')
+        router.push('/projects')
+      }
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleViewDrawings = () => {
+    if (generatedPlan) {
+      router.push('/drawings')
+    }
+  }
+
+  const handleValidateBuildingCode = () => {
+    if (generatedPlan) {
+      router.push('/building-codes')
+    }
+  }
+
+  const handleCheckBrandCompliance = () => {
+    if (generatedPlan) {
+      router.push('/brand-manual')
+    }
+  }
+
   // Helper function to get the current preview's data URL
   const getPreviewDataURL = (mimeType = 'image/png', quality = 1): string | null => {
     // Get data URL based on current preview mode
@@ -258,11 +308,11 @@ export function FloorPlanGenerator() {
         link.click()
         document.body.removeChild(link)
       } else {
-        alert('Unable to capture preview. Please try again.')
+        toast.error('Unable to capture preview. Please try again.')
       }
     } catch (error) {
       console.error('Error exporting PNG:', error)
-      alert('Export failed. Please try again.')
+      toast.error('Export failed. Please try again.')
     } finally {
       setIsExporting(false)
     }
@@ -280,7 +330,7 @@ export function FloorPlanGenerator() {
       const imgData = getPreviewDataURL('image/png', 1)
 
       if (!imgData) {
-        alert('Unable to capture preview. Please try again.')
+        toast.error('Unable to capture preview. Please try again.')
         setIsExporting(false)
         return
       }
@@ -340,7 +390,7 @@ export function FloorPlanGenerator() {
       pdf.save(`floor-plan-${generatedPlan.buildingType || 'design'}-${previewMode}-${Date.now()}.pdf`)
     } catch (error) {
       console.error('Error exporting PDF:', error)
-      alert('Export failed. Please try again.')
+      toast.error('Export failed. Please try again.')
     } finally {
       setIsExporting(false)
     }
@@ -365,11 +415,11 @@ export function FloorPlanGenerator() {
         link.click()
         document.body.removeChild(link)
       } else {
-        alert('Unable to capture preview. Please try again.')
+        toast.error('Unable to capture preview. Please try again.')
       }
     } catch (error) {
       console.error('Error exporting JPG:', error)
-      alert('Export failed. Please try again.')
+      toast.error('Export failed. Please try again.')
     } finally {
       setIsExporting(false)
     }
@@ -385,7 +435,7 @@ export function FloorPlanGenerator() {
       })
     } catch (error) {
       console.error('Error exporting JSON:', error)
-      alert('Export failed. Please try again.')
+      toast.error('Export failed. Please try again.')
     }
   }
 
@@ -400,7 +450,7 @@ export function FloorPlanGenerator() {
       })
     } catch (error) {
       console.error('Error exporting DXF:', error)
-      alert('Export failed. Please try again.')
+      toast.error('Export failed. Please try again.')
     }
   }
 
@@ -415,7 +465,7 @@ export function FloorPlanGenerator() {
       })
     } catch (error) {
       console.error('Error exporting SVG:', error)
-      alert('Export failed. Please try again.')
+      toast.error('Export failed. Please try again.')
     }
   }
 
@@ -866,6 +916,49 @@ export function FloorPlanGenerator() {
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
+                        </div>
+                      )}
+
+                      {/* Post-Generation Actions */}
+                      {generatedPlan && (
+                        <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 min-w-[100px] gap-1.5 text-[11px] sm:text-xs h-8 sm:h-9"
+                            onClick={handleSaveAsProject}
+                            disabled={isSaving}
+                          >
+                            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FolderPlus className="h-3.5 w-3.5" />}
+                            Save as Project
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 min-w-[100px] gap-1.5 text-[11px] sm:text-xs h-8 sm:h-9"
+                            onClick={handleViewDrawings}
+                          >
+                            <ImageIcon className="h-3.5 w-3.5" />
+                            View Drawings
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 min-w-[100px] gap-1.5 text-[11px] sm:text-xs h-8 sm:h-9"
+                            onClick={handleValidateBuildingCode}
+                          >
+                            <Shield className="h-3.5 w-3.5" />
+                            Building Codes
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 min-w-[100px] gap-1.5 text-[11px] sm:text-xs h-8 sm:h-9"
+                            onClick={handleCheckBrandCompliance}
+                          >
+                            <BookOpen className="h-3.5 w-3.5" />
+                            Brand Check
+                          </Button>
                         </div>
                       )}
 

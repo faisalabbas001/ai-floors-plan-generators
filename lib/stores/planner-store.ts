@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { toast } from 'sonner';
 import { plannerApi, GeneratedPlan, PlannerMeta } from '@/lib/api';
 
 // Preview mode type
@@ -44,6 +45,7 @@ interface PlannerState {
   setSelectedStyle: (style: string) => void;
   setSelectedRatio: (ratio: string) => void;
   setPreviewMode: (mode: PreviewMode) => void;
+  setGeneratedPlan: (plan: GeneratedPlan) => void;
   generatePlan: () => Promise<boolean>;
   clearPlan: () => void;
   clearError: () => void;
@@ -95,6 +97,8 @@ export const usePlannerStore = create<PlannerState>()(
 
       setPreviewMode: (mode: PreviewMode) => set({ previewMode: mode }),
 
+      setGeneratedPlan: (plan: GeneratedPlan) => set({ generatedPlan: plan, error: null }),
+
       generatePlan: async () => {
         const { prompt, meta, selectedStyle, selectedRatio, previewMode } = get();
 
@@ -141,13 +145,16 @@ export const usePlannerStore = create<PlannerState>()(
             isGenerating: false,
             error: null,
           });
+          toast.success('Floor plan generated successfully!');
           return true;
         }
 
+        const errorMsg = response.message || 'Failed to generate plan';
         set({
           isGenerating: false,
-          error: response.message || 'Failed to generate plan',
+          error: errorMsg,
         });
+        toast.error(errorMsg);
 
         return false;
       },

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { toast } from 'sonner';
 import { authApi, User, SignupData, LoginData } from '@/lib/api';
 
 interface AuthState {
@@ -44,13 +45,16 @@ export const useAuthStore = create<AuthState>()(
             error: null,
           });
 
+          toast.success(`Welcome, ${user.name}!`);
           return true;
         }
 
+        const errorMsg = response.message || 'Signup failed';
         set({
           isLoading: false,
-          error: response.message || 'Signup failed',
+          error: errorMsg,
         });
+        toast.error(errorMsg);
 
         return false;
       },
@@ -73,13 +77,16 @@ export const useAuthStore = create<AuthState>()(
             error: null,
           });
 
+          toast.success(`Welcome back, ${user.name}!`);
           return true;
         }
 
+        const errorMsg = response.message || 'Login failed';
         set({
           isLoading: false,
-          error: response.message || 'Login failed',
+          error: errorMsg,
         });
+        toast.error(errorMsg);
 
         return false;
       },
